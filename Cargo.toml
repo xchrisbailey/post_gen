@@ -9,5 +9,4 @@ edition = "2018"
 [dependencies]
 chrono = "0.4.19"
 dialoguer = "0.7.1"
-slugify = "0.1.0"
 str_slug = "0.1.3"
