@@ -2,7 +2,6 @@ use chrono::prelude::*;
 use dialoguer::{theme::ColorfulTheme, Input};
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::PathBuf;
 use str_slug::slug;
 use structopt::StructOpt;
 
