@@ -1,7 +1,7 @@
 use chrono::prelude::*;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
-use std::fs::File;
 use std::io::prelude::*;
+use std::{fs::File, io::LineWriter};
 use str_slug::slug;
 use structopt::StructOpt;
 
@@ -12,10 +12,22 @@ struct Opt {
     path: String,
 }
 
+#[derive(Debug)]
+struct FileInfo {
+    title: String,
+    excerpt: String,
+    slug: String,
+    path: String,
+    date: DateTime<Local>,
+}
+
 fn main() {
     let opt = Opt::from_args();
+    let info: FileInfo = get_file_info(&opt.path);
+    create_mdx_file(info).unwrap();
+}
 
-    // user input for post title and excerpt
+fn get_file_info(opt_path: &str) -> FileInfo {
     let title: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Post title")
         .interact_text()
@@ -36,22 +48,43 @@ fn main() {
 
     let date: DateTime<Local> = Local::now();
 
-    // generate the file name, and post slug
-    let slug: String = slug(&title);
-    let file_slug: String = format!("/{}-{}", date.format("%Y-%m-%d"), slug);
+    let slug: String = build_slug(&date, &title);
+    let save_path: String = format!("{}/{}.{}", opt_path, slug, extensions[ext]);
 
-    let frontmatter = format!(
-        "---\ntitle: {}\nexcerpt: {}\ndate: {}\nslug: {}\n---",
-        &title, &excerpt, &date, &slug
-    );
-
-    let save_path: String = format!("{}{}.{}", opt.path, file_slug, extensions[ext]);
-
-    create_mdx_file(&frontmatter, &save_path).unwrap();
+    FileInfo {
+        title,
+        excerpt,
+        slug,
+        path: save_path,
+        date,
+    }
 }
 
-fn create_mdx_file(frontmatter: &str, save_path: &str) -> std::io::Result<()> {
-    let mut file: File = File::create(save_path)?;
-    file.write_all(frontmatter.as_bytes())?;
+fn build_slug(date: &DateTime<Local>, title: &str) -> String {
+    let combine: String = format!("{}-{}", date.format("%Y-%m-%d"), title);
+    slug(combine)
+}
+
+fn create_mdx_file(info: FileInfo) -> std::io::Result<()> {
+    let file: File = File::create(&info.path)?;
+    let mut file: LineWriter<File> = LineWriter::new(file);
+
+    file.write_all(b"---\n")?;
+
+    file.write_all(b"title: ")?;
+    file.write_all(&info.title.as_bytes())?;
+
+    file.write_all(b"\nexcerpt: ")?;
+    file.write_all(&info.excerpt.as_bytes())?;
+
+    file.write_all(b"\ndate: ")?;
+    file.write_all(&info.date.to_string().as_bytes())?;
+
+    file.write_all(b"\nslug: ")?;
+    file.write_all(&info.slug.as_bytes())?;
+
+    file.write_all(b"\n---")?;
+
+    file.flush()?;
     Ok(())
 }
