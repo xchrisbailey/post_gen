@@ -6,7 +6,7 @@ use str_slug::slug;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "basic")]
+#[structopt(name = "post_gen")]
 struct Opt {
     #[structopt(short, long)]
     path: String,
