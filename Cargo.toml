@@ -8,7 +8,7 @@ edition = "2018"
 
 [[bin]]
 name = "post_gen"
-test = false
+test = true 
 bench = true 
 
 [dependencies]

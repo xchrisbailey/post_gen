@@ -88,3 +88,21 @@ fn create_mdx_file(info: FileInfo) -> std::io::Result<()> {
     file.flush()?;
     Ok(())
 }
+
+#[cfg(test)]
+mod test {
+    #[allow(unused_imports)]
+    use super::*;
+
+    #[test]
+    fn slug_creation() {
+        assert_eq!(
+            build_slug(&Local::now(), "slug test"),
+            format!(
+                "{}-{}",
+                Local::now().format("%Y-%m-%d"),
+                String::from("slug-test")
+            )
+        );
+    }
+}
