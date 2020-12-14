@@ -15,13 +15,19 @@ struct Opt {
 struct FileInfo {
     title: String,
     excerpt: String,
-    slug: String,
+    slugs: Slugs,
     path: String,
     date: DateTime<Local>,
 }
 
+#[derive(Debug)]
+struct Slugs {
+    file: String,
+    raw: String,
+}
+
 fn main() {
-    let opt = Opt::from_args();
+    let opt: Opt = Opt::from_args();
     let info: FileInfo = get_file_info(&opt.path);
     create_mdx_file(info).unwrap();
 }
@@ -47,39 +53,42 @@ fn get_file_info(opt_path: &str) -> FileInfo {
 
     let date: DateTime<Local> = Local::now();
 
-    let slug: String = build_slug(&date, &title);
-    let save_path: String = format!("{}/{}.{}", opt_path, slug, extensions[ext]);
+    let slugs: Slugs = gen_slugs(&title, &extensions[ext], &date);
+    let save_path: String = format!("{}/{}", opt_path, slugs.file);
 
     FileInfo {
         title,
         excerpt,
-        slug,
+        slugs,
         path: save_path,
         date,
     }
 }
 
-fn slug(name: &str) -> String {
+fn gen_slugs(title: &str, ext: &str, date: &DateTime<Local>) -> Slugs {
     let separator: char = '-';
-    let name: String = name.to_lowercase();
-    let mut slug: String = String::new();
-    for s in name.chars() {
+    let title: String = title.to_lowercase();
+    let mut raw_slug: String = String::new();
+    for s in title.chars() {
         if s.is_whitespace() {
-            slug.push(separator);
+            raw_slug.push(separator);
             continue;
         }
 
         match s {
-            'a'..='z' | '0'..='9' | '-' => slug.push(s),
+            'a'..='z' | '0'..='9' | '-' => raw_slug.push(s),
             _ => (),
         }
     }
-    slug.trim_matches(separator).into()
-}
 
-fn build_slug(date: &DateTime<Local>, title: &str) -> String {
-    let combine: String = format!("{}-{}", date.format("%Y-%m-%d"), title);
-    slug(&combine)
+    let raw_slug: String = raw_slug.trim_matches(separator).into();
+    let raw_slug: String = format!("{}-{}", date.format("%Y-%m-%d"), raw_slug);
+    let file_slug: String = format!("{}.{}", &raw_slug, ext);
+
+    Slugs {
+        file: file_slug,
+        raw: raw_slug,
+    }
 }
 
 fn create_mdx_file(info: FileInfo) -> std::io::Result<()> {
@@ -98,7 +107,7 @@ fn create_mdx_file(info: FileInfo) -> std::io::Result<()> {
     file.write_all(&info.date.to_string().as_bytes())?;
 
     file.write_all(b"\nslug: ")?;
-    file.write_all(&info.slug.as_bytes())?;
+    file.write_all(&info.slugs.raw.as_bytes())?;
 
     file.write_all(b"\n---")?;
 
@@ -112,21 +121,25 @@ mod test {
     use super::*;
 
     #[test]
-    fn slug_builder() {
+    fn gen_slugs_test() {
+        let slugs: Slugs = gen_slugs("slug test", "md", &Local::now());
         assert_eq!(
-            build_slug(&Local::now(), "slug test"),
-            format!(
-                "{}-{}",
-                Local::now().format("%Y-%m-%d"),
-                String::from("slug-test")
-            )
+            slugs.file,
+            format!("{}-{}", Local::now().format("%Y-%m-%d"), "slug-test.md")
         );
-    }
+        assert_eq!(
+            slugs.raw,
+            format!("{}-{}", Local::now().format("%Y-%m-%d"), "slug-test")
+        );
 
-    #[test]
-    fn gen_slug_test() {
-        assert_eq!(slug("hello world"), "hello-world");
-        assert_eq!(slug("HeLLo WorlD"), "hello-world");
-        assert_eq!(slug("!hello world."), "hello-world");
+        let slugs: Slugs = gen_slugs("slug! test.", "md", &Local::now());
+        assert_eq!(
+            slugs.file,
+            format!("{}-{}", Local::now().format("%Y-%m-%d"), "slug-test.md")
+        );
+        assert_eq!(
+            slugs.raw,
+            format!("{}-{}", Local::now().format("%Y-%m-%d"), "slug-test")
+        );
     }
 }
