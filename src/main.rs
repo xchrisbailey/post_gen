@@ -29,7 +29,7 @@ struct Slugs {
 fn main() {
     let opt: Opt = Opt::from_args();
     let info: FileInfo = get_file_info(&opt.path);
-    create_mdx_file(info).unwrap();
+    create_file(info).unwrap();
 }
 
 fn get_file_info(opt_path: &str) -> FileInfo {
@@ -91,7 +91,7 @@ fn gen_slugs(title: &str, ext: &str, date: &DateTime<Local>) -> Slugs {
     }
 }
 
-fn create_mdx_file(info: FileInfo) -> std::io::Result<()> {
+fn create_file(info: FileInfo) -> std::io::Result<()> {
     let file: File = File::create(&info.path)?;
     let mut file: LineWriter<File> = LineWriter::new(file);
 
