@@ -83,12 +83,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "deunicode"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80115a2dfde04491e181c2440a39e4be26e52d9ca4e92bed213f65b94e0b8db1"
-
-[[package]]
 name = "dialoguer"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -172,7 +166,6 @@ version = "0.1.1"
 dependencies = [
  "chrono",
  "dialoguer",
- "str_slug",
  "structopt",
 ]
 
@@ -293,15 +286,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "str_slug"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84da93ea0b92d99a7257a0539f00ef07e1658d54dc82dd811a3be16838dd85fa"
-dependencies = [
- "deunicode",
 ]
 
 [[package]]

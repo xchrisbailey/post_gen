@@ -2,7 +2,6 @@ use chrono::prelude::*;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use std::io::prelude::*;
 use std::{fs::File, io::LineWriter};
-use str_slug::slug;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -60,9 +59,27 @@ fn get_file_info(opt_path: &str) -> FileInfo {
     }
 }
 
+fn slug(name: &str) -> String {
+    let separator: char = '-';
+    let name: String = name.to_lowercase();
+    let mut slug: String = String::new();
+    for s in name.chars() {
+        if s.is_whitespace() {
+            slug.push(separator);
+            continue;
+        }
+
+        match s {
+            'a'..='z' | '0'..='9' | '-' => slug.push(s),
+            _ => (),
+        }
+    }
+    slug.trim_matches(separator).into()
+}
+
 fn build_slug(date: &DateTime<Local>, title: &str) -> String {
     let combine: String = format!("{}-{}", date.format("%Y-%m-%d"), title);
-    slug(combine)
+    slug(&combine)
 }
 
 fn create_mdx_file(info: FileInfo) -> std::io::Result<()> {
@@ -95,7 +112,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn slug_creation() {
+    fn slug_builder() {
         assert_eq!(
             build_slug(&Local::now(), "slug test"),
             format!(
@@ -104,5 +121,12 @@ mod test {
                 String::from("slug-test")
             )
         );
+    }
+
+    #[test]
+    fn gen_slug_test() {
+        assert_eq!(slug("hello world"), "hello-world");
+        assert_eq!(slug("HeLLo WorlD"), "hello-world");
+        assert_eq!(slug("!hello world."), "hello-world");
     }
 }
