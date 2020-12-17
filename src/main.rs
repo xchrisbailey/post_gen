@@ -109,6 +109,8 @@ fn create_file(info: FileInfo) -> std::io::Result<()> {
     file.write_all(b"\nslug: ")?;
     file.write_all(&info.slugs.raw.as_bytes())?;
 
+    file.write_all(b"published: false\n")?;
+
     file.write_all(b"\n---")?;
 
     file.flush()?;
